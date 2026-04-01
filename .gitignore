@@ -1,0 +1,13 @@
+# Environments
+.env
+
+# Generated media and temporary files
+*.mp4
+*.mp3
+
+# Logs and output info
+history_log.txt
+upload_info.txt
+
+# Local run scripts
+*.bat

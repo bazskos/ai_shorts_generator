@@ -1,0 +1,5 @@
+moviepy
+groq
+edge-tts
+requests
+python-dotenv
