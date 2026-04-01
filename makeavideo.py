@@ -177,10 +177,12 @@ for i, f in enumerate(downloaded_files):
     # Crossfade between clips
     if i > 0:
         try:
-            c_final = c_final.with_crossfadein(0.5)
+            # MoviePy 1.x
+            c_final = c_final.crossfadein(0.5)
         except AttributeError:
-            from moviepy.video.fx.all import crossfadein
-            c_final = c_final.fx(crossfadein, 0.5)
+            # MoviePy 2.x
+            import moviepy.video.fx as vfx
+            c_final = c_final.with_effects([vfx.CrossFadeIn(0.5)])
             
     final_clips.append(c_final)
 
@@ -198,29 +200,41 @@ if os.path.exists(MUSIC_FILE):
 video_bg = video_bg.with_audio(narration)
 
 subtitle_clips = []
+LINE_HEIGHT = 85 + (5 * 2) + 20
+MAX_LINES = 2
+SUBTITLE_AREA_H = LINE_HEIGHT * MAX_LINES
+SUBTITLE_Y = 1500
+
 for w in grouped_timings:
     txt = TextClip(
-        text=w["text"], 
-        font="C:/Windows/Fonts/arialbd.ttf", 
-        font_size=85, 
-        color='white', 
-        bg_color='black'
+        text=w["text"].strip(),
+        font="C:/Windows/Fonts/arialbd.ttf",
+        font_size=80,
+        color='white',
+        stroke_color='black',
+        stroke_width=4,
+        size=(TARGET_W - 80, 300),  # ← explicit magasság, elég nagy 2 sorhoz is
+        method='caption',            # ← caption kell ha fix size van megadva
+        text_align='center'
     )
+
     try:
-        txt = txt.with_position(('center', 1350)).with_start(w["start"]).with_end(w["end"])
+        txt = txt.with_position(('center', SUBTITLE_Y)).with_start(w["start"]).with_end(w["end"])
     except AttributeError:
-        txt = txt.set_position(('center', 1350)).set_start(w["start"]).set_end(w["end"])
-    
+        txt = txt.set_position(('center', SUBTITLE_Y)).set_start(w["start"]).set_end(w["end"])
+
     subtitle_clips.append(txt)
 
 today_histroy = CompositeVideoClip([video_bg] + subtitle_clips)
 
 # Fade in/out the entire video
 try:
-    today_histroy = today_histroy.with_fadein(0.5).with_fadeout(0.5)
+    # MoviePy 1.x
+    today_histroy = today_histroy.fadein(0.5).fadeout(0.5)
 except AttributeError:
-    from moviepy.video.fx.all import fadein, fadeout
-    today_histroy = today_histroy.fx(fadein, 0.5).fx(fadeout, 0.5)
+    # MoviePy 2.x
+    import moviepy.video.fx as vfx
+    today_histroy = today_histroy.with_effects([vfx.FadeIn(0.5), vfx.FadeOut(0.5)])
 
 print("4. Rendering...")
 today_histroy.write_videofile(OUTPUT_FILE, fps=24, preset="ultrafast", logger='bar')
