@@ -55,21 +55,24 @@ else:
             history = "".join(lines[-20:]) # Keep only the last 20 topics to prevent long prompts
     
     prompt = f"""
-    Task: Write a highly engaging, viral-style script about a mind-blowing, TRUE historical event. It should be 130-150 words (perfect for a 60-second TikTok/Shorts video).
+    Task: Write a highly engaging, viral-style script about a bizarre, mind-blowing, but 100% TRUE obscure historical event. 
+    Length: 130-150 words (perfect for a 60-second TikTok/Shorts video).
     
     Guidelines for the story:
+    - We want CRAZY, unbelievable history. Think along the lines of "Operation Mincemeat" (a dead homeless man tricked the Nazis), "Wojtek" (a bear drafted into the army), or bizarre military deceptions.
+    - Do NOT write about generic facts (like Roman concrete, how pyramids were built, or generic WWII facts). Pick a highly specific, weird, lesser-known event or person.
     - Start with a strong, curiosity-inducing hook (e.g., "History books forgot to mention...", "This is the craziest true story about...").
-    - Focus on bizarre, shocking, or deeply fascinating real historical events (not well-known clichés).
     - Use conversational, fast-paced storytelling.
     - End with a thought-provoking conclusion or plot twist.
     
-    Avoid these previous topics: {history}
+    Avoid these previously generated historical events: 
+    {history}
     
-    CRITICAL RULE FOR KEYWORDS: Do NOT use proper nouns or specific names (like 'Nabataean Kingdom' or 'Julius Caesar'). 
-    Only use generic, highly visual stock-footage search terms like 'sand dunes', 'old stone ruins', 'ocean waves', 'dark cave'.
-    Caption: Write an engaging TikTok caption to encourage comments, plus trending hashtags. Use emojis.
+    CRITICAL RULE FOR KEYWORDS: Do NOT use proper nouns or specific names. Only use generic, highly visual stock-footage search terms like 'sand dunes', 'old stone ruins', 'ocean waves', 'dark cave', 'military radar'.
+    
     Provide ONLY JSON:
     {{
+        "topic_summary": "A 3-5 word summary of the exact historical event (e.g., 'Operation Mincemeat corpse deception')",
         "story": "Full detailed story with normal punctuation.",
         "keywords": ["visual term 1", "visual term 2", "visual term 3", "visual term 4"],
         "caption": "Engaging TikTok caption | #history #shorts"
@@ -82,6 +85,7 @@ else:
             response_format={"type": "json_object"}
         )
         data = json.loads(completion.choices[0].message.content)
+        topic_summary = data["topic_summary"].strip()
         story_text = data["story"].strip()
         keywords = data["keywords"]
         upload_caption = data["caption"].strip()
@@ -213,8 +217,8 @@ for w in grouped_timings:
         color='white',
         stroke_color='black',
         stroke_width=4,
-        size=(TARGET_W - 80, 300),  # ← explicit magasság, elég nagy 2 sorhoz is
-        method='caption',            # ← caption kell ha fix size van megadva
+        size=(TARGET_W - 80, 300),
+        method='caption',
         text_align='center'
     )
 
@@ -258,10 +262,12 @@ try:
     if os.path.exists(AUDIO_FILE): os.remove(AUDIO_FILE)
 except: pass
 
-with open(INFO_FILE, "w", encoding="utf-8") as f: f.write(upload_caption)
+with open(INFO_FILE, "w", encoding="utf-8") as f: 
+    f.write(upload_caption)
 
 if not TEST_MODE:
-    with open(LOG_FILE, "a", encoding="utf-8") as f: f.write(story_text[:50] + "...\n")
+    with open(LOG_FILE, "a", encoding="utf-8") as f: 
+        f.write(f"- {topic_summary}\n")
 
 print(f"\n🎉 DONE! Clean up finished.")
 print(f"📁 Kept: {OUTPUT_FILE} and {INFO_FILE}")
